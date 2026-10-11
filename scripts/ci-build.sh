@@ -38,7 +38,7 @@ docker run --rm --platform linux/amd64 \
   --user "$prep_uid:$prep_gid" \
   --cpus=1 --memory=3g --memory-swap=3g \
   --cap-drop=ALL --security-opt=no-new-privileges \
-  --tmpfs /tmp:rw,nosuid,nodev,size=512m \
+  --tmpfs /tmp:rw,exec,nosuid,nodev,size=512m \
   --mount "type=bind,src=$source_dir,dst=/app" --workdir /app \
   --mount "type=bind,src=$prep_passwd,dst=/etc/passwd,readonly" \
   --env HOME=/tmp --env PUPPETEER_SKIP_DOWNLOAD=true \
@@ -46,6 +46,13 @@ docker run --rm --platform linux/amd64 \
   --env "GEV_UPSTREAM_URL=$upstream_url" --env "GEV_SOURCE_COMMIT=$upstream_sha" \
   --env "GEV_LAYER_BASE=$layer_base_sha" \
   "$base" sh -euc '
+    # Upstream tests create executable npm stubs in their temporary fixtures.
+    # Docker tmpfs keeps noexec by default unless exec is explicitly supplied.
+    probe=$(mktemp /tmp/gev-ci-exec.XXXXXX)
+    printf "#!/bin/sh\nexit 0\n" > "$probe"
+    chmod 0700 "$probe"
+    "$probe"
+    rm -f -- "$probe"
     env -i PATH="$PATH" node -e "console.log(require(\"node:os\").homedir())"
     env -i PATH="$PATH" npm --version
     git --version
@@ -61,6 +68,7 @@ docker run --rm --platform linux/amd64 \
       test "$(git rev-parse FETCH_HEAD)" = "$GEV_LAYER_BASE"
     fi
     npm ci --no-audit --no-fund
+    node --test --test-concurrency=1 src/devCctv.test.mjs src/toolProjectRoot.test.mjs
     npm run check:boundaries
     npm run layer-token:check -- --base-ref "$GEV_LAYER_BASE"
     npm test
