@@ -13,19 +13,41 @@ policy_sha=$(node --input-type=module -e 'import {readFileSync} from "node:fs"; 
 image="gev-audit:${wrapper_sha}"
 
 docker pull --platform linux/amd64 "$base"
+# Some upstream launcher tests deliberately remove HOME from child environments.
+# Give the numeric runner UID a real passwd identity without changing the image,
+# the host's accounts, or ownership of the dedicated source tree.
+prep_uid=$(id -u)
+prep_gid=$(id -g)
+if [ "$prep_uid" -eq 0 ]; then
+  printf 'Preparation must run as a non-root runner UID.\n' >&2
+  exit 1
+fi
+prep_passwd="$PWD/.work/prep-passwd"
+docker run --rm --platform linux/amd64 --user 1000:1000 \
+  --network=none --read-only --cpus=1 --memory=128m --memory-swap=128m \
+  --pids-limit=32 --cap-drop=ALL --security-opt=no-new-privileges \
+  "$base" cat /etc/passwd > "$prep_passwd"
+if ! awk -F: -v uid="$prep_uid" '$3 == uid { found = 1 } END { exit !found }' "$prep_passwd"; then
+  printf 'gevci-%s:x:%s:%s:Ephemeral CI preparation:/tmp:/bin/sh\n' \
+    "$prep_uid" "$prep_uid" "$prep_gid" >> "$prep_passwd"
+fi
+chmod 0600 "$prep_passwd"
 # All npm lifecycle scripts, tests and compilation share this one cgroup.
 # No credentials, ports, Docker socket or other host directory are passed in.
 docker run --rm --platform linux/amd64 \
-  --user "$(id -u):$(id -g)" \
+  --user "$prep_uid:$prep_gid" \
   --cpus=1 --memory=3g --memory-swap=3g \
   --cap-drop=ALL --security-opt=no-new-privileges \
   --tmpfs /tmp:rw,nosuid,nodev,size=512m \
   --mount "type=bind,src=$source_dir,dst=/app" --workdir /app \
+  --mount "type=bind,src=$prep_passwd,dst=/etc/passwd,readonly" \
   --env HOME=/tmp --env PUPPETEER_SKIP_DOWNLOAD=true \
   --env OPENSKY_AUTH_MODE=anon --env GIT_TERMINAL_PROMPT=0 \
   --env "GEV_UPSTREAM_URL=$upstream_url" --env "GEV_SOURCE_COMMIT=$upstream_sha" \
   --env "GEV_LAYER_BASE=$layer_base_sha" \
   "$base" sh -euc '
+    env -i PATH="$PATH" node -e "console.log(require(\"node:os\").homedir())"
+    env -i PATH="$PATH" npm --version
     git --version
     git init --quiet .
     git config core.autocrlf false

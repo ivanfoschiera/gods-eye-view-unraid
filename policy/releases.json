@@ -11,7 +11,7 @@
   "publication": {
     "enabled": false,
     "runtime_redistribution_review": "blocked",
-    "reason": "Runtime SVG artwork, ALPR PNG artwork, and Google-derived CCTV heights have unresolved redistribution grants. No replacements or functional removals are applied."
+    "reason": "Public redistribution of the Google-derived CCTV height snapshot needs applicable permission; runtime artwork license scope also needs clarification. Original runtime assets and behavior are retained."
   },
   "reviewed_releases": {
     "v0.2.1": {
