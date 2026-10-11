@@ -3,9 +3,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 node scripts/source.mjs
-base=$(node --input-type=module -e 'import {policy} from "./scripts/common.mjs"; console.log(policy.node_image)')
+base=$(node --input-type=module -e 'import {policy} from "./scripts/common.mjs"; console.log(policy.prep_node_image)')
 source_dir=$(node --input-type=module -e 'import {sourceRoot} from "./scripts/common.mjs"; console.log(sourceRoot)')
 upstream_sha=$(node --input-type=module -e 'import {release} from "./scripts/common.mjs"; console.log(release.commit)')
+layer_base_sha=$(node --input-type=module -e 'import {release} from "./scripts/common.mjs"; console.log(release.layer_token_base_commit)')
+upstream_url=$(node --input-type=module -e 'import {policy} from "./scripts/common.mjs"; console.log(`https://github.com/${policy.upstream_repository}.git`)')
 wrapper_sha=${GITHUB_SHA:-local-audit}
 policy_sha=$(node --input-type=module -e 'import {readFileSync} from "node:fs"; import {sha256} from "./scripts/common.mjs"; console.log(sha256(readFileSync("policy/releases.json")))')
 image="gev-audit:${wrapper_sha}"
@@ -20,8 +22,28 @@ docker run --rm --platform linux/amd64 \
   --tmpfs /tmp:rw,nosuid,nodev,size=512m \
   --mount "type=bind,src=$source_dir,dst=/app" --workdir /app \
   --env HOME=/tmp --env PUPPETEER_SKIP_DOWNLOAD=true \
-  --env OPENSKY_AUTH_MODE=anon \
-  "$base" sh -euc 'npm ci --no-audit --no-fund; npm run check:boundaries; npm run layer-token:check; npm test; npm run build'
+  --env OPENSKY_AUTH_MODE=anon --env GIT_TERMINAL_PROMPT=0 \
+  --env "GEV_UPSTREAM_URL=$upstream_url" --env "GEV_SOURCE_COMMIT=$upstream_sha" \
+  --env "GEV_LAYER_BASE=$layer_base_sha" \
+  "$base" sh -euc '
+    git --version
+    git init --quiet .
+    git config core.autocrlf false
+    git config core.filemode false
+    git -c credential.helper= fetch --quiet --no-tags --depth=1 "$GEV_UPSTREAM_URL" "$GEV_SOURCE_COMMIT"
+    test "$(git rev-parse FETCH_HEAD)" = "$GEV_SOURCE_COMMIT"
+    git reset --mixed "$GEV_SOURCE_COMMIT" >/dev/null
+    git diff --quiet "$GEV_SOURCE_COMMIT" -- .
+    if [ "$GEV_LAYER_BASE" != "$GEV_SOURCE_COMMIT" ]; then
+      git -c credential.helper= fetch --quiet --no-tags --depth=1 "$GEV_UPSTREAM_URL" "$GEV_LAYER_BASE"
+      test "$(git rev-parse FETCH_HEAD)" = "$GEV_LAYER_BASE"
+    fi
+    npm ci --no-audit --no-fund
+    npm run check:boundaries
+    npm run layer-token:check -- --base-ref "$GEV_LAYER_BASE"
+    npm test
+    npm run build
+  '
 
 node scripts/candidate.mjs
 docker build --platform linux/amd64 \

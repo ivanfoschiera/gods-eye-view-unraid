@@ -9,6 +9,8 @@ export const WORK = path.join(ROOT, '.work');
 export const policy = JSON.parse(readFileSync(path.join(ROOT, 'policy/releases.json'), 'utf8'));
 export const release = policy.reviewed_releases[policy.active_release];
 if (!release || !/^[a-f0-9]{40}$/.test(release.commit)) throw new Error('Invalid reviewed source pin');
+if (!/^[a-f0-9]{40}$/.test(release.layer_token_base_commit ?? '')) throw new Error('Invalid published layer-token baseline pin');
+if (!/^docker\.io\/library\/node@sha256:[a-f0-9]{64}$/.test(policy.prep_node_image ?? '')) throw new Error('Preparation must use the pinned official Node image');
 export const sourceRoot = path.join(WORK, 'upstream', `gods-eye-view-${release.commit}`);
 
 export function sha256(value) { return createHash('sha256').update(value).digest('hex'); }

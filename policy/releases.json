@@ -5,6 +5,8 @@
   "platform": "linux/amd64",
   "node_tag_reference": "24.21.0-bookworm-slim",
   "node_image": "docker.io/library/node@sha256:51b1100cc2a83d370c6a60952e3f2989c8a43159d0e38586e090f3b3326efefd",
+  "prep_node_tag_reference": "24.21.0-bookworm",
+  "prep_node_image": "docker.io/library/node@sha256:9af606de2e947cfb3f276633b7c5130c4cd22365aa10f5a647b7675d5cfce0c0",
   "active_release": "v0.2.1",
   "publication": {
     "enabled": false,
@@ -14,6 +16,7 @@
   "reviewed_releases": {
     "v0.2.1": {
       "commit": "aa16b7c3b0166a89d8c7a6089e0aff53a22faaee",
+      "layer_token_base_commit": "aa16b7c3b0166a89d8c7a6089e0aff53a22faaee",
       "archive_url": "https://codeload.github.com/bilawalsidhu/gods-eye-view/tar.gz/aa16b7c3b0166a89d8c7a6089e0aff53a22faaee",
       "archive_sha256": "a6020d0aa12a952585edee44a4765ab11f511e3f616927645d7ce04ce48487cb",
       "package_lock_sha256": "38ff16d5b7624831757031d095ea8a16788340a3ef70209cdaa41a03d043b2b2",
