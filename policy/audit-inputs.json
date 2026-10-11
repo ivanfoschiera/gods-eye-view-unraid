@@ -1,0 +1,21 @@
+{
+  "source": "aa16b7c3b0166a89d8c7a6089e0aff53a22faaee",
+  "files": {
+    "DATA_SOURCES.md": "934943af2420e27f6a16302412e26f8d73110a90ddfab4652bfe9db91bdff045",
+    "LICENSE": "b231bb38e2d4eab741643126087cbe9df2b58e2f2e5abf27ad613d05f52b01ca",
+    "README.md": "e1b45ca06b68b7af5071dd4454f5ba228cb1555994177d01b308f7494f7a3bd8",
+    "THIRD_PARTY_NOTICES.md": "d90d9f5e12851f67f3e61613d4e91e6c2f20dfb0c8b056e85f4068cd3e86b6b4",
+    "public/events/bhote-koshi-2026/README.md": "3b86c195f09e26e86cef5d63f4fdb89144b591b6cfcbd78d5f8ff99a657417c5",
+    "public/models/README.md": "0e773b75019c0c39f8689d8cc1ce6d4e4a8ab3f995d413413d775c27827612f9",
+    "scripts/fixtures/voice/README.md": "b54c9589db0f39d6629f13522e5b9f852bdfafd4e63f54edc52996fac2805500",
+    "src/data/fixtures/README.md": "7c84ef80c71d491d8431f3791baf12e8f172a72557982507a8d8d1aef3d07eb9",
+    "src/data/local_data/cctv_ground_heights/README.md": "ade9646783852ebf2cb60cd0aba3525bae1efc09a324a5d7f60182741d2b678b",
+    "src/data/local_data/dams/README.md": "38fd328c121aa798bd9e3d770acb8bf9602058b18e4e8806dc2de5a9f58ab401",
+    "src/data/local_data/datacenters/README.md": "f132b903c041a15e6d898e379e86004382dfac9bc86b506c9f30647630682089",
+    "src/data/local_data/natural_earth/README.md": "9fa79c981e26374898ddaa85f91651b6bb8c8a3d6c0b66a141bc81b042f8fb33",
+    "src/data/local_data/osm_military_names/README.md": "fd20d352a5c9016d7c9a1b685a082e8fa7c9af089c784a3ac8adbe4e88f93b13",
+    "src/data/local_data/telegeography_submarine_cables/README.md": "512bfe853af9bacaf29cc09a55082ede42ebea303decb1cb51c20e5304ca25aa",
+    "src/data/local_data/us_census_counties/README.md": "a8a1f9b3bb178a96bbeccbfb2a0169c618a0123ae355b99c7d5dab8d1c245cfe",
+    "tools/README.md": "b71b44e978e9f5af3167781c96969ad4241519cb42846e4cc9fec35eb17058d3"
+  }
+}

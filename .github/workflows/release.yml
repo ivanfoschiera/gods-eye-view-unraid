@@ -1,0 +1,64 @@
+name: Reviewed upstream audit and release
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '37 6 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: gods-eye-view-reviewed-release
+  cancel-in-progress: false
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    outputs:
+      run_audit: ${{ steps.release.outputs.run_audit }}
+      can_publish: ${{ steps.release.outputs.can_publish }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - id: release
+        name: Check official upstream tag and reviewed allowlist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/release.mjs check
+  audit:
+    needs: discover
+    if: needs.discover.outputs.run_audit == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify, install, test, build and smoke the ephemeral audit candidate
+        run: bash scripts/ci-build.sh
+      - name: Explain closed publication gate
+        run: |
+          node --input-type=module -e 'import {policy} from "./scripts/common.mjs"; console.log(JSON.stringify(policy.publication,null,2))'
+          echo 'Candidate checked only. No binary artifacts uploaded; no Unraid changes.' >> "$GITHUB_STEP_SUMMARY"
+  publish:
+    needs: [discover, audit]
+    if: needs.discover.outputs.can_publish == 'true' && needs.audit.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Independent publication policy guard before executing build
+        run: |
+          node --input-type=module -e 'import {policy} from "./scripts/common.mjs"; if(policy.publication.enabled!==true || policy.publication.runtime_redistribution_review!=="approved") throw new Error("PUBLICATION BLOCKED")'
+      # No binary artifact transfer between jobs: rebuild/retest in this fresh runner.
+      - name: Rebuild and revalidate the exact candidate in the publishing runner
+        run: bash scripts/ci-build.sh
+      - name: Publish immutable tags, verify anonymous pull, then promote latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/publish.mjs

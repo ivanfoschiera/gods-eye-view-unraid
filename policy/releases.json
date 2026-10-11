@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "upstream_repository": "bilawalsidhu/gods-eye-view",
+  "image": "ghcr.io/ivanfoschiera/gods-eye-view-unraid",
+  "platform": "linux/amd64",
+  "node_tag_reference": "24.21.0-bookworm-slim",
+  "node_image": "docker.io/library/node@sha256:51b1100cc2a83d370c6a60952e3f2989c8a43159d0e38586e090f3b3326efefd",
+  "active_release": "v0.2.1",
+  "publication": {
+    "enabled": false,
+    "runtime_redistribution_review": "blocked",
+    "reason": "Runtime SVG artwork, ALPR PNG artwork, and Google-derived CCTV heights have unresolved redistribution grants. No replacements or functional removals are applied."
+  },
+  "reviewed_releases": {
+    "v0.2.1": {
+      "commit": "aa16b7c3b0166a89d8c7a6089e0aff53a22faaee",
+      "archive_url": "https://codeload.github.com/bilawalsidhu/gods-eye-view/tar.gz/aa16b7c3b0166a89d8c7a6089e0aff53a22faaee",
+      "archive_sha256": "a6020d0aa12a952585edee44a4765ab11f511e3f616927645d7ce04ce48487cb",
+      "package_lock_sha256": "38ff16d5b7624831757031d095ea8a16788340a3ef70209cdaa41a03d043b2b2",
+      "source_manifest_sha256": "6e4394ea57479d69211be51f095778f439aa22ea6054fae158a357ca7255088f",
+      "runtime_manifest_sha256": "8b19f88bf9cd9726746c37fd0fa12abf8616e2f999b46e10337e8ce088778b87"
+    }
+  }
+}

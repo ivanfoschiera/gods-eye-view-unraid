@@ -1,0 +1,12 @@
+.work/
+node_modules/
+dist/
+.env
+.env.*
+*.tar
+*.tar.gz
+*.tgz
+*.log
+.gev-cache/
+.gev-logs/
+ENVIRONMENT
